@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Central Asia Tours - Discover the Magic of Central Asia</title>
+    <style>
+        /* Remove all default spacing */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #fff;
+            position: fixed;
+        }
+
+        /* Object/embed container - immune to Firefox text zoom */
+        #content-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 1920px;
+            height: 100%;
+            border: none;
+            overflow: visible;
+            display: block;
+            transform-origin: 0 0;
+        }
+    </style>
+</head>
+<body>
+    <!--
+        OBJECT TAG TECHNIQUE:
+        Using <object> instead of <iframe> provides better isolation.
+        Firefox text-only zoom does NOT penetrate object boundaries.
+    -->
+    <object
+        id="content-container"
+        type="text/html"
+        data="index-content.html"
+        style="border:0; overflow:hidden;">
+        <p>Your browser doesn't support embedded content. Please open index-content.html directly.</p>
+    </object>
+
+    <script>
+        (function() {
+            'use strict';
+
+            var container = document.getElementById('content-container');
+
+            function adjustScale() {
+                var viewportWidth = window.innerWidth;
+                var viewportHeight = window.innerHeight;
+                var scaleFactor = viewportWidth / 1920;
+
+                // Scale the object to fit viewport
+                container.style.transform = 'scale(' + scaleFactor + ')';
+                container.style.width = '1920px';
+                container.style.height = (viewportHeight / scaleFactor) + 'px';
+            }
+
+            // Initial scale
+            setTimeout(adjustScale, 100);
+
+            // Adjust on resize
+            window.addEventListener('resize', adjustScale);
+
+            // Monitor viewport changes
+            var lastWidth = window.innerWidth;
+            setInterval(function() {
+                if (window.innerWidth !== lastWidth) {
+                    adjustScale();
+                    lastWidth = window.innerWidth;
+                }
+            }, 100);
+
+            console.log('✅ Object wrapper loaded - backgrounds will stay static');
+        })();
+    </script>
+</body>
+</html>
