@@ -21,6 +21,11 @@
             zoom: 1 !important;
             -moz-transform: scale(1) !important;
             -moz-transform-origin: 0 0 !important;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        body.svg-ready {
+            opacity: 1;
         }
     </style>
     <title>Central Asia Tours - Discover the Magic of Central Asia</title>
@@ -459,6 +464,20 @@
             'use strict';
 
             var processedElements = new WeakSet();
+            var detectionElement = null;
+            var currentTextZoom = 1;
+
+            // Detect current text-only zoom level
+            function detectTextZoom() {
+                if (!detectionElement) {
+                    detectionElement = document.createElement('div');
+                    detectionElement.style.cssText = 'position:fixed;top:-999px;left:-999px;font-size:16px;';
+                    detectionElement.textContent = 'M';
+                    document.documentElement.appendChild(detectionElement);
+                }
+                var computedSize = parseFloat(window.getComputedStyle(detectionElement).fontSize);
+                return computedSize / 16;
+            }
 
             function wrapTextInSVG(element) {
                 // Skip if already processed or if it's an SVG element
@@ -492,12 +511,12 @@
 
                 // Get computed styles
                 var styles = window.getComputedStyle(element);
-                var fontSize = parseFloat(styles.fontSize);
+                var fontSize = parseFloat(styles.fontSize) / currentTextZoom;  // Correct for text zoom
                 var fontFamily = styles.fontFamily;
                 var fontWeight = styles.fontWeight;
                 var color = styles.color;
                 var textAlign = styles.textAlign;
-                var lineHeight = parseFloat(styles.lineHeight) || fontSize * 1.2;
+                var lineHeight = (parseFloat(styles.lineHeight) || fontSize * 1.2) / currentTextZoom;  // Correct line height too
                 var display = styles.display;
 
                 // Extract ONLY direct text content
@@ -543,6 +562,12 @@
             }
 
             function processAllText() {
+                // Detect current zoom level FIRST
+                currentTextZoom = detectTextZoom();
+                if (currentTextZoom !== 1) {
+                    console.log('📏 Initial text zoom detected:', (currentTextZoom * 100).toFixed(0) + '% - correcting font sizes');
+                }
+
                 // Select ALL text elements including nested ones
                 var selectors = 'h1, h2, h3, h4, h5, h6, p, span, a, button, li, div, label, td, th';
                 var elements = document.querySelectorAll(selectors);
@@ -559,15 +584,24 @@
                 });
 
                 console.log('✅ SVG text wrapping applied to ' + processed + ' elements - text is now immune to zoom');
+
+                // Clean up detection element
+                if (detectionElement && detectionElement.parentNode) {
+                    detectionElement.parentNode.removeChild(detectionElement);
+                }
+
+                // Show the page now that SVG wrapping is complete
+                document.body.classList.add('svg-ready');
             }
 
-            // Wait for page to fully load
+            // Execute immediately when DOM is ready
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', function() {
-                    setTimeout(processAllText, 300);
+                    processAllText();
                 });
             } else {
-                setTimeout(processAllText, 300);
+                // DOM already loaded, execute immediately
+                processAllText();
             }
 
         })();
